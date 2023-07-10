@@ -6,6 +6,10 @@ const userSchema = mongoose.Schema({
   password: { type: String, required: false },
   googleId: { type: String, required: false },
   id: { type: String },
+  imgpath: {
+    type: String,
+    required: true,
+  },
 });
 
 const UserModal = mongoose.model("User", userSchema);
