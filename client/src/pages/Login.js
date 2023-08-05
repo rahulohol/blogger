@@ -11,39 +11,50 @@ import {
   Button,
   InputGroup,
   InputRightElement,
+  useToast,
 } from '@chakra-ui/react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaUserCircle } from 'react-icons/fa';
 import { FiLock } from 'react-icons/fi';
+import { FcGoogle } from 'react-icons/fc';
 
-import { Link as ReactRouterLink } from 'react-router-dom';
+import { Link as ReactRouterLink, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link as ChakraLink, LinkProps } from '@chakra-ui/react';
+import { toast } from 'react-toastify';
+import { BeatLoader } from 'react-spinners';
+
+import { googleSignIn, login } from '../redux/features/authSlice';
+import { GoogleLogin } from 'react-google-login';
 
 const initialState = {
   email: '',
   password: '',
 };
+
 const Login = () => {
   const [formValue, setFormValue] = useState(initialState);
   const { email, password } = formValue;
+
   const [show, setShow] = useState(false);
 
-  const colorHeading = useColorModeValue('gray.900', 'white');
+  const { loading, error } = useSelector(state => ({ ...state.auth }));
+  const chkkratoast = useToast();
 
-  const bgColorMode = useColorModeValue('#ffffff', '#16151e');
+  useEffect(() => {
+    console.log(error);
+    error &&
+      error !== '' &&
+      chkkratoast({
+        title: `${error}`,
+        status: 'error',
+        isClosable: true,
+      });
+  }, [error]);
 
-  const colorLoginBox = useColorModeValue('#ffffff', '#16151e');
-  const userIconColor = useColorModeValue('gray.600', 'gray.300');
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const borderColor = useColorModeValue('transparent', 'gray');
-
-  // const breakpoints = {
-  //   sm: '30em', // 480px
-  //   md: '48em', // 768px
-  //   lg: '62em', // 992px
-  //   xl: '80em', // 1280px
-  //   '2xl': '96em', // 1536px
-  // };
   const handleClick = () => setShow(!show);
 
   const onInputChange = e => {
@@ -55,10 +66,41 @@ const Login = () => {
   const handleSubmit = e => {
     e.preventDefault();
     if (email && password) {
-      //  dispatch(login({ formValue, navigate, toast }));
-      console.log('email & password ->', email, password);
+      dispatch(login({ formValue, navigate, toast }));
     }
   };
+
+  const googleSuccess = resp => {
+    console.log(resp);
+    // const email = resp?.profileObj?.email;
+    // const name = resp?.profileObj?.name;
+    // const token = resp?.tokenId;
+    // const googleId = resp?.googleId;
+    // const result = { email, name, token, googleId };
+    // dispatch(googleSignIn({ result, navigate, toast }));
+  };
+  const googleFailure = error => {
+    toast.error(error);
+  };
+
+  const colorHeading = useColorModeValue('gray.900', 'white');
+
+  const bgColorMode = useColorModeValue('#ffffff', '#16151e');
+
+  const colorLoginBox = useColorModeValue('#ffffff', '#16151e');
+  const userIconColor = useColorModeValue('gray.600', 'gray.300');
+
+  const borderColor = useColorModeValue('transparent', 'gray');
+  const googleLoginBtnBgColor = useColorModeValue('#FFFFFF', '#1a202c');
+  const googleLoginBtnTextColor = useColorModeValue('black', '#FFFFFF');
+
+  // const breakpoints = {
+  //   sm: '30em', // 480px
+  //   md: '48em', // 768px
+  //   lg: '62em', // 992px
+  //   xl: '80em', // 1280px
+  //   '2xl': '96em', // 1536px
+  // };
 
   return (
     <Box
@@ -73,10 +115,10 @@ const Login = () => {
         pb={'40px'}
         // maxW="450px"
         maxW={['98%', '450px', '450px']}
-        boxShadow="lg"
+        boxShadow="rgba(0, 0, 0, 0.24) 0px 3px 8px"
         bg={colorLoginBox}
         borderRadius={'md'}
-        box-shadow=" box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px"
+        // box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
         border={`1px solid ${borderColor}`}
       >
         <Box
@@ -153,12 +195,35 @@ const Login = () => {
                   bg: '#4f46e5',
                   opacity: 0.9,
                 }}
+                isLoading={loading}
+                spinner={<BeatLoader size={8} color="white" />}
               >
                 Sign In
               </Button>
             </VStack>
           </form>
         </Box>
+        <GoogleLogin
+          clientId="544318968857-fu2c0luniuolgmk4uk90sq5nq48ov6lu.apps.googleusercontent.com"
+          render={renderProps => (
+            <Button
+              // leftIcon={<FiLock />}
+              variant="outline"
+              mt={'15px'}
+              leftIcon={<FcGoogle fontSize="25px" />}
+              style={{ width: '100%' }}
+              color={googleLoginBtnTextColor}
+              bg={googleLoginBtnBgColor}
+              onClick={renderProps.onClick}
+              disabled={renderProps.disabled}
+            >
+              Google Sign In
+            </Button>
+          )}
+          onSuccess={googleSuccess}
+          onFailure={googleFailure}
+          cookiePolicy="single_host_origin"
+        />
         <Box w={'100%'} textAlign={'center'} mt={'15px'}>
           <ChakraLink
             as={ReactRouterLink}
