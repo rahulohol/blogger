@@ -12,6 +12,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Home from './pages/Home';
 import Register from './pages/Register';
 import Login from './pages/Login';
+import Header from './components/Header';
 
 function App() {
   // const colorChange = localStorage.getItem('chakra-ui-color-mode');
@@ -25,6 +26,9 @@ function App() {
   return (
     <ChakraProvider theme={theme}>
       <BrowserRouter>
+        {/* <header className="fixed-header"> */}
+        <Header />
+        {/* </header> */}
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
