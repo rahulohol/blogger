@@ -38,7 +38,11 @@ const Login = () => {
 
   const [show, setShow] = useState(false);
 
+  const { user } = useSelector(state => ({ ...state.auth }));
+  const [logedUser, setLogedUser] = useState(user);
+
   const { loading, error } = useSelector(state => ({ ...state.auth }));
+
   const chkkratoast = useToast();
 
   useEffect(() => {
@@ -63,30 +67,46 @@ const Login = () => {
     console.log(formValue);
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
     if (email && password) {
-      dispatch(login({ formValue, navigate, toast }));
+      dispatch(login({ formValue, navigate, chkkratoast }));
+      console.log(user);
+      // if (user?.result?._id) {
+
+      // }
     }
   };
 
-  const googleSuccess = resp => {
-    console.log(resp);
-    // const email = resp?.profileObj?.email;
-    // const name = resp?.profileObj?.name;
-    // const token = resp?.tokenId;
-    // const googleId = resp?.googleId;
-    // const result = { email, name, token, googleId };
-    // dispatch(googleSignIn({ result, navigate, toast }));
-  };
-  const googleFailure = error => {
-    toast.error(error);
-  };
+  useEffect(() => {
+    if (user?.result?._id) {
+      chkkratoast({
+        title: 'Login Successfully',
+        // description: "We've created your account for you.",
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+      });
+      navigate('/');
+    }
+  }, [user]);
+
+  // const googleSuccess = resp => {
+  //   console.log(resp);
+  // const email = resp?.profileObj?.email;
+  // const name = resp?.profileObj?.name;
+  // const token = resp?.tokenId;
+  // const googleId = resp?.googleId;
+  // const result = { email, name, token, googleId };
+  // dispatch(googleSignIn({ result, navigate, toast }));
+  // };
+  // const googleFailure = error => {
+  //   toast.error(error);
+  // };
 
   const colorHeading = useColorModeValue('gray.900', 'white');
 
   const bgColorMode = useColorModeValue('#ffffff', '#16151e');
-
   const colorLoginBox = useColorModeValue('#ffffff', '#16151e');
   const userIconColor = useColorModeValue('gray.600', 'gray.300');
 
@@ -106,19 +126,18 @@ const Login = () => {
     <Box
       w={'100%'}
       h={'100vh'}
+      mt={'50px'}
       bg={bgColorMode}
-      pt={['70px', '120px', '120px']}
+      pt={['50px', '70px', '100px']}
     >
       <Box
         m="auto"
         p="15px"
         pb={'40px'}
-        // maxW="450px"
-        maxW={['98%', '450px', '450px']}
+        maxW={['98%', '450px', '480px']}
         boxShadow="rgba(0, 0, 0, 0.24) 0px 3px 8px"
         bg={colorLoginBox}
-        borderRadius={'md'}
-        // box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+        borderRadius={'sm'}
         border={`1px solid ${borderColor}`}
       >
         <Box
@@ -203,7 +222,7 @@ const Login = () => {
             </VStack>
           </form>
         </Box>
-        <GoogleLogin
+        {/* <GoogleLogin
           clientId="544318968857-fu2c0luniuolgmk4uk90sq5nq48ov6lu.apps.googleusercontent.com"
           render={renderProps => (
             <Button
@@ -223,7 +242,8 @@ const Login = () => {
           onSuccess={googleSuccess}
           onFailure={googleFailure}
           cookiePolicy="single_host_origin"
-        />
+        /> */}
+
         <Box w={'100%'} textAlign={'center'} mt={'15px'}>
           <ChakraLink
             as={ReactRouterLink}

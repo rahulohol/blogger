@@ -85,21 +85,17 @@ const Register = () => {
   // };
 
   return (
-    <Box
-      w={'100%'}
-      h={'100vh'}
-      bg={bgColorMode}
-      pt={['70px', '120px', '120px']}
-    >
+    <Box w={'100%'} h={'100vh'} bg={bgColorMode} pt={['50px', '70px', '70px']}>
       <Box
         m="auto"
         p="15px"
         pb={'40px'}
+        mt={'50px'}
         // maxW="450px"
         maxW={['98%', '450px', '500px']}
         boxShadow="rgba(0, 0, 0, 0.24) 0px 3px 8px"
         bg={colorLoginBox}
-        borderRadius={'md'}
+        borderRadius={'sm'}
         // box-shadow=" box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px"
         border={`1px solid ${borderColor}`}
       >
