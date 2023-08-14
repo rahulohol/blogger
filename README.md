@@ -1,2 +1,2 @@
-# Blogger a complete full stack application. 
+# Blogger a complete full stack application.  
 
