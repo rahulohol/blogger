@@ -5,10 +5,12 @@ const blogSchema = mongoose.Schema({
   description: String,
   name: String,
   creator: String,
+  category: String,
+  creatorImage: String,
+  isVerified: Boolean,
   tags: [String],
   imgpath: {
     type: String,
-    required: true,
   },
   createdAt: {
     type: Date,
