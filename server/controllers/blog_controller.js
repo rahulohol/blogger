@@ -56,16 +56,38 @@ export const updateBlog = async (req, res) => {
   }
 };
 
+// export const getBlogs = async (req, res) => {
+//   const { page } = req.query;
+//   try {
+//     // const blogs = await BlogModal.find();
+//     // res.status(200).json(blogs);
+
+//     const limit = 6;
+//     const startIndex = (Number(page) - 1) * limit;
+//     const total = await BlogModal.countDocuments({});
+//     const blogs = await BlogModal.find().limit(limit).skip(startIndex);
+//     res.json({
+//       data: blogs,
+//       currentPage: Number(page),
+//       totalBlogs: total,
+//       numberOfPages: Math.ceil(total / limit),
+//     });
+//   } catch (error) {
+//     res.status(404).json({ message: "Something went wrong" });
+//   }
+// };
+
 export const getBlogs = async (req, res) => {
   const { page } = req.query;
   try {
-    // const blogs = await BlogModal.find();
-    // res.status(200).json(blogs);
-
     const limit = 6;
     const startIndex = (Number(page) - 1) * limit;
     const total = await BlogModal.countDocuments({});
-    const blogs = await BlogModal.find().limit(limit).skip(startIndex);
+    const blogs = await BlogModal.find()
+      .sort({ createdAt: -1 }) // Sort by createdAt field in descending order (recent first)
+      .limit(limit)
+      .skip(startIndex);
+
     res.json({
       data: blogs,
       currentPage: Number(page),
