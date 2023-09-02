@@ -1,5 +1,6 @@
 import BlogModal from "../models/blog.js";
 import mongoose from "mongoose";
+import cloudinary from "../helper/cloudinaryconfig.js";
 
 export const createBlog = async (req, res) => {
   const blog = req.body;

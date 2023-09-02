@@ -2,6 +2,8 @@ import express from "express";
 import multer from "multer";
 const router = express.Router();
 import auth from "../middlewares/auth.js";
+import BlogModal from "../models/blog.js";
+import cloudinary from "../helper/cloudinaryconfig.js";
 
 import {
   createBlog,
@@ -45,7 +47,29 @@ const upload = multer({
   fileFilter: isImage,
 });
 
-router.post("/create", upload.single("imageFile"), auth, createBlog);
+router.post("/create", upload.single("imageFile"), auth, async (req, res) => {
+  const blog = req.body;
+  // if (req.file) {
+  // const { filename } = req.file;
+  // }
+  const upload = await cloudinary.uploader.upload(req.file.path);
+
+  const newBlog = new BlogModal({
+    ...blog,
+    creator: req.userId,
+    imgpath: upload.secure_url,
+
+    // imgpath: filename,
+    createdAt: new Date().toISOString(),
+  });
+
+  try {
+    await newBlog.save();
+    res.status(201).json(newBlog);
+  } catch (error) {
+    res.status(404).json({ message: "Something went wrong" });
+  }
+});
 
 router.delete("/delete/:id", auth, deleteBlog);
 
