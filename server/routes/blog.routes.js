@@ -71,9 +71,49 @@ router.post("/create", upload.single("imageFile"), auth, async (req, res) => {
   }
 });
 
-router.delete("/delete/:id", auth, deleteBlog);
+router.put(
+  "/update/:id",
+  upload.single("imageFile"),
+  auth,
+  async (req, res) => {
+    const { id } = req.params;
+    const updatedBlogData = req.body;
 
-router.put("/update/:id", upload.single("imageFile"), auth, updateBlog);
+    try {
+      let updatedBlog = { ...updatedBlogData };
+
+      if (req.file) {
+        // const { filename } = req.file;
+
+        const upload = await cloudinary.uploader.upload(req.file.path);
+
+        updatedBlog.imgpath = upload.secure_url;
+      }
+
+      let existingBlog = await BlogModal.findById(id);
+      if (!existingBlog) {
+        return res.status(404).json({ message: "Blog not found" });
+      }
+
+      for (let key in updatedBlog) {
+        existingBlog[key] = updatedBlog[key];
+      }
+
+      console.log(existingBlog);
+
+      const update = await BlogModal.findByIdAndUpdate(id, existingBlog, {});
+
+      await update.save();
+
+      res.status(200).json(update);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Something went wrong" });
+    }
+  }
+);
+
+router.delete("/delete/:id", auth, deleteBlog);
 
 router.get("/userblogs/:id", getBlogsByUser);
 
