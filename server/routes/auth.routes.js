@@ -4,6 +4,7 @@ import multer from "multer";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import UserModal from "../models/user.js";
+import cloudinary from "../helper/cloudinaryconfig.js";
 // import dotenv from "dotenv";
 
 import {
