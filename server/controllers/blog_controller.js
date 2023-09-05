@@ -1,4 +1,5 @@
 import BlogModal from "../models/blog.js";
+import View from "../models/views.js";
 import mongoose from "mongoose";
 import cloudinary from "../helper/cloudinaryconfig.js";
 
@@ -100,13 +101,48 @@ export const getBlogs = async (req, res) => {
   }
 };
 
+// export const getBlog = async (req, res) => {
+//   const { id } = req.params;
+//   try {
+//     const blog = await BlogModal.findById(id);
+//     res.status(200).json(blog);
+//   } catch (error) {
+//     res.status(404).json({ message: "Something went wrong" });
+//   }
+// };
+
 export const getBlog = async (req, res) => {
   const { id } = req.params;
   try {
     const blog = await BlogModal.findById(id);
+
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+
+    // Get the user's ID from the request (assuming you have user authentication)
+    const userId = req.userId;
+    console.log(userId);
+    if (userId) {
+      // Check if the user has already viewed this blog
+      const existingView = await View.findOne({ userId, blogId: id });
+
+      if (!existingView) {
+        // If the user has not viewed this blog before, record the view
+        await View.create({ userId, blogId: id });
+      }
+    }
+
+    // Increment the total view count for the blog
+    blog.views += 1;
+
+    // Save the updated blog object
+    await blog.save();
+
     res.status(200).json(blog);
   } catch (error) {
-    res.status(404).json({ message: "Something went wrong" });
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
