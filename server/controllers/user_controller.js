@@ -141,31 +141,27 @@ export const followUserController = async (req, res) => {
 
     saveFollowing.imgpath = userFollowing?.imgpath;
 
-    let checkFollow = false;
+    // let checkFollow = false;
 
-    if (userToFollow.followers) {
-      for (let i = 0; i < userToFollow.followers.length; i++) {
-        let obj = userToFollow.followers[i];
-        for (let key in obj) {
-          if (obj[key].toString() === currentUserId) {
-            checkFollow = true;
-          }
-        }
-      }
-    }
-    if (!checkFollow) {
-      userToFollow.followers.push(saveFollowing);
-    }
+    // if (userToFollow.followers) {
+    //   for (let i = 0; i < userToFollow.followers.length; i++) {
+    //     let obj = userToFollow.followers[i];
+    //     for (let key in obj) {
+    //       if (obj[key].toString() === currentUserId) {
+    //         checkFollow = true;
+    //       }
+    //     }
+    //   }
+    // }
+
+    userToFollow.followers.push(saveFollowing);
 
     let followersCount = userToFollow.followers.length;
     await userToFollow.save();
 
     // Return the updated user data for the current user
-    if (!checkFollow) {
-      res.json({ saveFollowing, followersCount });
-    } else {
-      res.json({ error: "You Already Following" });
-    }
+
+    res.json({ saveFollowing, followersCount });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
