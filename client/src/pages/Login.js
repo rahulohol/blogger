@@ -21,11 +21,11 @@ import { FcGoogle } from 'react-icons/fc';
 import { Link as ReactRouterLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link as ChakraLink, LinkProps } from '@chakra-ui/react';
-import { toast } from 'react-toastify';
+// import { toast } from 'react-toastify';
 import { BeatLoader } from 'react-spinners';
 
 import { googleSignIn, login } from '../redux/features/authSlice';
-import { GoogleLogin } from 'react-google-login';
+// import { GoogleLogin } from 'react-google-login';
 
 const initialState = {
   email: '',
@@ -81,8 +81,10 @@ const Login = () => {
   useEffect(() => {
     if (user?.result?._id) {
       chkkratoast({
+        // position: 'top-right',
+
         title: 'Login Successfully',
-        // description: "We've created your account for you.",
+        description: 'We are glad you back!',
         status: 'success',
         duration: 9000,
         isClosable: true,
@@ -106,7 +108,7 @@ const Login = () => {
 
   const colorHeading = useColorModeValue('gray.900', 'white');
 
-  const bgColorMode = useColorModeValue('#ffffff', '#16151e');
+  const bgColorMode = useColorModeValue('#ffffff', '#0d0c11');
   const colorLoginBox = useColorModeValue('#ffffff', '#16151e');
   const userIconColor = useColorModeValue('gray.600', 'gray.300');
 
@@ -136,7 +138,7 @@ const Login = () => {
         pb={'40px'}
         maxW={['98%', '450px', '480px']}
         boxShadow="rgba(0, 0, 0, 0.24) 0px 3px 8px"
-        bg={colorLoginBox}
+        // bg={colorLoginBox}
         borderRadius={'sm'}
         border={`1px solid ${borderColor}`}
       >
@@ -259,11 +261,3 @@ const Login = () => {
 };
 
 export default Login;
-
-{
-  /* <Box textAlign="center" fontSize="xl">
-  <Grid minH="100vh" p={3}>
-    <ColorModeSwitcher justifySelf="flex-end" />
-  </Grid>
-</Box>; */
-}

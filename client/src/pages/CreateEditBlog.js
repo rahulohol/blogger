@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -12,34 +12,46 @@ import {
   Heading,
   Text,
   useColorModeValue,
+  CSSReset,
+  Select,
 } from '@chakra-ui/react';
 import { MdSend } from 'react-icons/md';
-// import GrUpdate from 'react-icons/gr';
+
 import { ImSpinner11 } from 'react-icons/im';
 import { FaFileImage } from 'react-icons/fa';
 
 import ChipInput from 'material-ui-chip-input';
-// import FileBase from 'react-file-base64';
+
+import JoditEditor from 'jodit-react';
+import debounce from 'lodash/debounce';
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { createBlog, updateTour } from '../redux/features/tourSlice';
-// import { createBlog } from '../../../server/controllers/blog_controller';
+import { createBlog, getBlog, updateBlog } from '../redux/features/blogSlice';
+import RichTextEditor from '../components/RichTextEditor';
 
 const initialState = {
   title: '',
   description: '',
   tags: [],
+  category: '',
 };
 
 const AddEditBlog = () => {
   const [blogData, setBlogData] = useState(initialState);
   const [tagErrMsg, setTagErrMsg] = useState(null);
   const toast = useToast();
+
   const { colorMode } = useColorMode();
 
-  const { error, userTours } = useSelector(state => ({
-    ...state.tour,
+  const editor = useRef(null);
+  const [content, setContent] = useState('');
+  console.log(content);
+
+  const { error, blog } = useSelector(state => ({
+    ...state.blog,
   }));
+
   const { user } = useSelector(state => ({ ...state.auth }));
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -49,12 +61,39 @@ const AddEditBlog = () => {
 
   useEffect(() => {
     if (id) {
-      const singleTour = userTours.find(tour => tour._id === id);
-      console.log(singleTour);
-      setBlogData({ ...singleTour });
+      dispatch(getBlog(id));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [dispatch, id]);
+
+  useEffect(() => {
+    if (blog && id) {
+      setBlogData({ ...blog });
+    }
+  }, [blog]);
+
+  const [value, setValue] = useState('');
+  const getValue = value => {
+    setValue(value);
+    // blogData.description = value;
+
+    var tempElement = document.createElement('div');
+    tempElement.innerHTML = value;
+
+    // Get all elements within the temporary element
+    var elementsInsideRichTextData = tempElement.querySelectorAll('*');
+
+    // Loop through elements inside the rich text data and remove the background-color property
+    elementsInsideRichTextData.forEach(function (element) {
+      element.style.backgroundColor = 'transparent';
+      // element.style.color = '#333';
+    });
+
+    // Get the modified rich text data
+    // var modifiedRichTextData = tempElement.innerHTML;
+
+    // Get the modified rich text data
+    blogData.description = tempElement.innerHTML;
+  };
 
   useEffect(() => {
     error &&
@@ -65,6 +104,7 @@ const AddEditBlog = () => {
         duration: 3000,
         isClosable: true,
       });
+    //eslint-disable-next-line
   }, [error]);
 
   const config = {
@@ -75,46 +115,83 @@ const AddEditBlog = () => {
 
   const handleSubmit = e => {
     e.preventDefault();
-    console.log(blogData);
-    if (!tags.length) {
+
+    if (!Array.isArray(tags) || tags.length === 0) {
       setTagErrMsg('Please provide some tags');
+      return;
     }
     if (title && description && tags) {
-      const updatedBlogData = { ...blogData, name: user?.result?.name };
+      const updatedBlogData = {
+        ...blogData,
+        name: user?.result?.name,
+        creatorImage: user?.result?.imgpath,
+        isVerified: user?.result?.isVerified,
+      };
 
       if (!id) {
         dispatch(createBlog({ updatedBlogData, config, navigate }));
       } else {
-        dispatch(updateTour({ id, updatedBlogData, toast, navigate }));
+        dispatch(updateBlog({ id, updatedBlogData, config, navigate }));
       }
+
+      toast({
+        position: 'top',
+        title: 'Success',
+        description: 'Blog created/Updated Successfully',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
       handleClear();
     }
   };
+  // console.log(blogData);
   const onInputChange = e => {
     const { name, value } = e.target;
     setBlogData({ ...blogData, [name]: value });
   };
+
   const handleAddTag = tag => {
     setTagErrMsg(null);
     setBlogData({ ...blogData, tags: [...blogData.tags, tag] });
   };
+
   const handleDeleteTag = deleteTag => {
+    console.log('Deleting tag:', deleteTag);
     setBlogData({
       ...blogData,
       tags: blogData.tags.filter(tag => tag !== deleteTag),
     });
   };
+
   const handleClear = () => {
     setBlogData({ title: '', description: '', tags: [] });
   };
 
   const borderColor = useColorModeValue('transparent', 'gray');
 
+  const editorStyles =
+    colorMode === 'dark'
+      ? {
+          backgroundColor: '#232433',
+          color: 'white',
+          height: '120px',
+          textAlign: 'initial',
+          // ... (other styles for dark mode)
+        }
+      : {
+          backgroundColor: '#FFFFFF',
+          color: 'black',
+          height: '120px',
+          textAlign: 'initial',
+        };
+
   return (
     <Box
       width="100%"
-      height="100vh"
-      bg={colorMode === 'dark' ? '#16151e' : 'transparent'}
+      minH="100vh"
+      height={'100%'}
+      bg={colorMode === 'dark' ? '#0d0c11' : '#FFFFFF'}
       display="flex"
       alignItems="center"
       justifyContent="center"
@@ -128,14 +205,14 @@ const AddEditBlog = () => {
         w={{
           base: '96%',
           sm: '96%',
-          md: '60%',
-          lg: '45%',
-          xl: '35%',
-          '2xl': '30%',
+          md: '70%',
+          lg: '60%',
+          xl: '50%',
+          '2xl': '50%',
         }}
-        bg={colorMode === 'dark' ? '#232433' : '#FFFFFF'}
+        // bg={colorMode === 'dark' ? '#232433' : '#FFFFFF'}
         alignContent="center"
-        marginTop="120px"
+        marginTop="100px"
         className="container"
         border={`1px solid ${borderColor}`}
         borderRadius={'md'}
@@ -156,7 +233,7 @@ const AddEditBlog = () => {
                 required
               />
             </FormControl>
-            <FormControl>
+            {/* <FormControl>
               <FormLabel>Description</FormLabel>
               <Textarea
                 placeholder="Enter Description"
@@ -166,47 +243,16 @@ const AddEditBlog = () => {
                 onChange={onInputChange}
                 required
               />
-            </FormControl>
-            <FormControl>
-              <FormLabel>Tags</FormLabel>
-              <Box
-                bg={colorMode === 'dark' ? 'gray.600' : '#FFFFFF'}
-                border={'1px solid gray'}
-                borderRadius={'md'}
-              >
-                <ChipInput
-                  name="tags"
-                  // color="red"
-                  variant="outlined"
-                  placeholder="Enter Tags"
-                  fullWidth
-                  value={tags}
-                  onAdd={tag => handleAddTag(tag)}
-                  onDelete={tag => handleDeleteTag(tag)}
-                  inputProps={{
-                    style: {
-                      color: colorMode === 'dark' ? '#FFFFFF' : 'black',
-                    },
-                    placeholder: 'Enter Tag',
-                    placeholderTextColor:
-                      colorMode === 'dark' ? 'gray.200' : 'gray.600',
-                  }}
-                />
-              </Box>
-              {tagErrMsg && (
-                <Box className="tagErrMsg" color="tomato">
-                  {tagErrMsg}
-                </Box>
-              )}
-            </FormControl>
-
+            </FormControl> */}
             <FormControl>
               <FormLabel>Image</FormLabel>
               <Box position="relative" overflow="hidden">
                 <Button
                   as="label"
                   htmlFor="imageInput"
-                  colorScheme="purple"
+                  // colorScheme="purple"
+                  // outline
+                  border={'1px solid gray'}
                   width="100%"
                   fontSize="17px"
                   display="flex"
@@ -217,7 +263,7 @@ const AddEditBlog = () => {
                   borderRadius="5px"
                   transition="background-color 0.2s"
                 >
-                  Add Image
+                  {!blogData.imageFile ? 'Add Image' : 'Image Added'}
                   <FaFileImage size={18} style={{ marginLeft: '8px' }} />
                 </Button>
                 <Input
@@ -227,40 +273,118 @@ const AddEditBlog = () => {
                   display="none"
                   onChange={event => {
                     const file = event.target.files[0];
-                    // if (file) {
-                    //   const reader = new FileReader();
-                    //   reader.readAsDataURL(file);
-                    //   reader.onload = () => {
-                    //
                     setBlogData({ ...blogData, imageFile: file });
                   }}
                 />
               </Box>
             </FormControl>
-
-            <Button
-              type="submit"
-              bg="#4f46e5"
-              color={'#FFFFFF'}
-              width="100%"
-              fontSize={'17px'}
-              rightIcon={id ? <MdSend /> : <MdSend />}
-              iconSpacing={3}
-              _hover={{ bg: '#4f46d1' }}
+            {id && (
+              <Text fontSize={'sm'} color={'red.500'} mt={-1}>
+                Update image else previous image will be saved...
+              </Text>
+            )}
+            <FormControl>
+              <FormLabel>Description</FormLabel>
+              <RichTextEditor
+                initialValue={id ? blogData.description : ''}
+                getValue={getValue}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Select category</FormLabel>
+              <Select
+                placeholder="Select Category"
+                name="category"
+                value={blogData.category}
+                onChange={onInputChange}
+              >
+                {/* <option value="All">All</option> */}
+                <option value="Education">Education</option>
+                <option value="Technology">Technology</option>
+                <option value="Travel">Travel</option>
+                <option value="Entertainment">Entertainment</option>
+                <option value="Sports">Sports</option>
+                <option value="Stories">Stories</option>
+                <option value="History">History</option>
+                <option value="Arts">Arts</option>
+              </Select>
+            </FormControl>
+            <FormControl>
+              <FormLabel>Enter tags</FormLabel>
+              <Box
+                bg={colorMode === 'dark' ? '#FFF' : '#FFFFFF'}
+                // border={'1px solid gray'}
+                borderRadius={'md'}
+              >
+                {/* <ChipInput
+                  name="tags"
+                  // color="red"
+                  variant="outlined"
+                  placeholder="Enter Tags"
+                  fullWidth
+                  value={tags}
+                  onAdd={tag => {
+                    console.log(tag);
+                    handleAddTag(tag);
+                  }}
+                  onDelete={tag => {
+                    handleDeleteTag(tag);
+                  }}
+                /> */}
+                <ChipInput
+                  name="tags"
+                  variant="outlined"
+                  placeholder="Enter Tag"
+                  fullWidth
+                  value={tags}
+                  onAdd={tag => handleAddTag(tag)}
+                  onDelete={tag => handleDeleteTag(tag)}
+                />
+              </Box>
+              {tagErrMsg && (
+                <Box className="tagErrMsg" color="tomato">
+                  {tagErrMsg}
+                </Box>
+              )}
+            </FormControl>
+            <Box
+              display={'flex'}
+              flexDirection={{
+                base: 'column',
+                sm: 'column',
+                md: 'row',
+              }}
             >
-              {id ? 'Update' : 'Post'}
-            </Button>
-            <Button
-              width="100%"
-              mt={2}
-              colorScheme="red"
-              onClick={handleClear}
-              fontSize={'17px'}
-              rightIcon={<ImSpinner11 />}
-              iconSpacing={3}
-            >
-              Clear
-            </Button>
+              <Button
+                type="submit"
+                bg="#4f46e5"
+                color={'#FFFFFF'}
+                _hover={{ bg: '#4f46d1' }}
+                width="100%"
+                fontSize={'17px'}
+                mt={2}
+                mr={1}
+                rightIcon={id ? <MdSend /> : <MdSend />}
+                iconSpacing={3}
+              >
+                {id ? 'Update' : 'Post'}
+              </Button>
+              <Button
+                width="100%"
+                mt={2}
+                ml={1}
+                // colorScheme="red"
+                color={'#FFFFFF'}
+                // bg={'red.500'}
+                bg={'red.500'}
+                onClick={handleClear}
+                fontSize={'17px'}
+                rightIcon={<ImSpinner11 />}
+                iconSpacing={3}
+              >
+                Clear
+              </Button>
+            </Box>
           </VStack>
         </Box>
       </Box>

@@ -1,1 +1,19 @@
 @import url(https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&display=swap);
+
+.fixed-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    /* background-color: #f9fafb; */
+    /* Set your desired background color */
+    z-index: 1000;
+    /* Adjust the z-index as needed */
+}
+
+
+
+.jodit-status-bar{
+    visibility: collapse;
+}
+

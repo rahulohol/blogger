@@ -10,6 +10,7 @@ import {
   Button,
   InputGroup,
   InputRightElement,
+  useToast,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { FaUserCircle } from 'react-icons/fa';
@@ -18,8 +19,9 @@ import { FiLock } from 'react-icons/fi';
 import { Link as ReactRouterLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link as ChakraLink, LinkProps } from '@chakra-ui/react';
-import { toast } from 'react-toastify';
+// import { toast } from 'react-toastify';
 import { BeatLoader } from 'react-spinners';
+import { FaFileImage } from 'react-icons/fa';
 
 import { register } from '../redux/features/authSlice';
 
@@ -40,9 +42,20 @@ const Register = () => {
   const { loading, error } = useSelector(state => ({ ...state.auth }));
 
   const { email, password, firstName, lastName, confirmPassword } = formValue;
+  const toast = useToast();
 
   useEffect(() => {
-    error && toast.error(error);
+    error &&
+      toast({
+        position: 'top',
+        title: error,
+        // description: 'Blog created/Updated Successfully',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+
+    // toast.error(error);
   }, [error]);
 
   const dispatch = useDispatch();
@@ -57,19 +70,30 @@ const Register = () => {
     console.log(formValue);
   };
 
+  const config = {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  };
+
   const handleSubmit = e => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      return toast.error('Password should match');
+      return toast({
+        title: 'Password and Confirm Password do not match.',
+        status: 'error',
+        isClosable: true,
+      });
     }
     if (email && password && firstName && lastName && confirmPassword) {
-      dispatch(register({ formValue, navigate, toast }));
+      console.log(formValue);
+      dispatch(register({ formValue, config, navigate }));
     }
   };
 
   const colorHeading = useColorModeValue('gray.900', 'white');
 
-  const bgColorMode = useColorModeValue('#ffffff', '#16151e');
+  const bgColorMode = useColorModeValue('#ffffff', '#0d0c11');
 
   const colorLoginBox = useColorModeValue('#ffffff', '#16151e');
   const userIconColor = useColorModeValue('gray.600', 'gray.300');
@@ -85,7 +109,12 @@ const Register = () => {
   // };
 
   return (
-    <Box w={'100%'} h={'100vh'} bg={bgColorMode} pt={['50px', '70px', '70px']}>
+    <Box
+      w={'100%'}
+      minH={'100vh'}
+      bg={bgColorMode}
+      pt={['50px', '70px', '50px']}
+    >
       <Box
         m="auto"
         p="15px"
@@ -94,7 +123,7 @@ const Register = () => {
         // maxW="450px"
         maxW={['98%', '450px', '500px']}
         boxShadow="rgba(0, 0, 0, 0.24) 0px 3px 8px"
-        bg={colorLoginBox}
+        // bg={colorLoginBox}
         borderRadius={'sm'}
         // box-shadow=" box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px"
         border={`1px solid ${borderColor}`}
@@ -114,17 +143,16 @@ const Register = () => {
             display="block"
             justifyContent={'center'}
             alignSelf={'center'}
+            boxSize={8}
           />
           <Heading
             as={'h2'}
             fontSize={'1.875rem'}
             color={colorHeading}
-            fontFamily={
-              'ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji'
-            }
             fontWeight={800}
+            mt={2}
           >
-            Sign Up
+            Create Account
           </Heading>
         </Box>
         <Box mt={'25px'}>
@@ -203,6 +231,41 @@ const Register = () => {
                   </InputRightElement>
                 </InputGroup>
               </FormControl>
+
+              <FormControl>
+                <FormLabel>Image</FormLabel>
+                <Box position="relative" overflow="hidden">
+                  <Button
+                    as="label"
+                    htmlFor="imageInput"
+                    // colorScheme="purple"
+                    border={'1px dashed gray'}
+                    width="100%"
+                    fontSize="17px"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    cursor="pointer"
+                    padding="10px"
+                    borderRadius="5px"
+                    transition="background-color 0.2s"
+                  >
+                    {!formValue.imageFile ? 'Add Image' : 'Image Added'}
+                    <FaFileImage size={18} style={{ marginLeft: '8px' }} />
+                  </Button>
+                  <Input
+                    type="file"
+                    id="imageInput"
+                    accept="image/*"
+                    display="none"
+                    onChange={event => {
+                      const file = event.target.files[0];
+                      setFormValue({ ...formValue, imageFile: file });
+                    }}
+                  />
+                </Box>
+              </FormControl>
+
               <Button
                 leftIcon={<FiLock />}
                 w={'100%'}
@@ -234,11 +297,3 @@ const Register = () => {
 };
 
 export default Register;
-
-{
-  /* <Box textAlign="center" fontSize="xl">
-  <Grid minH="100vh" p={3}>
-    <ColorModeSwitcher justifySelf="flex-end" />
-  </Grid>
-</Box>; */
-}
