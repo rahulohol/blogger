@@ -47,6 +47,7 @@ const upload = multer({
 });
 
 router.post("/signup", upload.single("imageFile"), async (req, res) => {
+  console.log("inside of signup");
   // const { filename } = req.file;
 
   const upload = await cloudinary.uploader.upload(req.file.path);
